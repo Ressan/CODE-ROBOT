@@ -1,0 +1,167 @@
+//#include <ESP8266_Lib.h>
+//4DUGkgSa7wtLrn00HSZeDblQE3A_eHM
+//HH9HR9rBdFz9bQXcPlnPTz2Fb1jeMTkN
+//Zny1zo_5QtiWY8y-e6r2cqv_hAQ6wW4T
+//ell4-aCPf2RUgGHq1dTuaKOOt0k2DyNI
+//fCg6fvMF603tMeG91OU82jKNQroKn25z
+//2YkhuiemuBk00vLaSgTQslLUkStCitN2
+
+#include <Servo.h>
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+#define BLYNK_PRINT Serial
+#define RightMotorSpeed 5
+#define RightMotorDir   0
+#define LeftMotorSpeed  4
+#define LeftMotorDir    2
+
+Servo monServo;
+int positionServo = 179;
+
+char auth[] = "HH9HR9rBdFz9bQXcPlnPTz2Fb1jeMTkN";
+char ssid[] = "PasIci";
+char pass[] = "yesyesyes";
+
+
+int minRange = 312;
+int maxRange = 712;
+ 
+
+int minSpeed = 450;
+int maxSpeed = 1020;
+int noSpeed = 0;
+
+ 
+
+ 
+
+void moveControl(int x, int y)
+{
+   
+ if(y >= maxRange && x >= minRange && x <= maxRange) //zataci R
+{
+digitalWrite(RightMotorDir,HIGH);
+digitalWrite(LeftMotorDir,HIGH);
+analogWrite(RightMotorSpeed,maxSpeed);
+analogWrite(LeftMotorSpeed,maxSpeed);
+}
+
+// move forward right
+else if(x >= maxRange && y >= maxRange) //zataci R
+{
+digitalWrite(RightMotorDir,HIGH);
+digitalWrite(LeftMotorDir,HIGH);
+analogWrite(RightMotorSpeed,minSpeed);
+analogWrite(LeftMotorSpeed,maxSpeed);
+}
+
+// move forward left
+else if(x <= minRange && y >= maxRange)
+{
+digitalWrite(RightMotorDir,HIGH);
+digitalWrite(LeftMotorDir,HIGH);
+analogWrite(RightMotorSpeed,maxSpeed);
+analogWrite(LeftMotorSpeed,minSpeed);
+}
+
+// neutral zone
+else if(y < maxRange && y > minRange && x < maxRange && x > minRange)
+{
+analogWrite(RightMotorSpeed,noSpeed);
+analogWrite(LeftMotorSpeed,noSpeed);
+}
+
+// move back
+else if(y <= minRange && x >= minRange && x <= maxRange)
+{
+digitalWrite(RightMotorDir,LOW);
+digitalWrite(LeftMotorDir,LOW);
+analogWrite(RightMotorSpeed,maxSpeed);
+analogWrite(LeftMotorSpeed,maxSpeed);
+}
+
+// move back and right
+else if(y <= minRange && x <= minRange)
+{
+digitalWrite(RightMotorDir,LOW);
+digitalWrite(LeftMotorDir,LOW);
+analogWrite(RightMotorSpeed,minSpeed);
+analogWrite(LeftMotorSpeed,maxSpeed);
+}
+
+// move back and left
+else if(y <= minRange && x >= maxRange)
+{
+digitalWrite(RightMotorDir,LOW);
+digitalWrite(LeftMotorDir,LOW);
+analogWrite(RightMotorSpeed,maxSpeed);
+analogWrite(LeftMotorSpeed,minSpeed);
+}
+}
+
+
+void servo(int pinvalue)
+{
+  
+  if(pinvalue==1)
+  {
+  monServo.write(0);
+  delay(1000);
+  }
+  else if(pinvalue==0)
+  {
+  monServo.write(179);
+  delay(1000);
+  }
+}
+ 
+
+void setup()
+{
+
+  Serial.begin(9600);
+  Blynk.begin(auth, ssid, pass);
+
+  // initial settings for motors off and direction forward
+
+  pinMode(RightMotorSpeed, OUTPUT);
+  pinMode(LeftMotorSpeed, OUTPUT);
+  pinMode(RightMotorDir, OUTPUT);
+  pinMode(LeftMotorDir, OUTPUT);
+
+  digitalWrite(RightMotorSpeed, LOW);
+  digitalWrite(LeftMotorSpeed, LOW);
+
+  digitalWrite(RightMotorDir, HIGH);
+  digitalWrite(LeftMotorDir,HIGH);
+
+  monServo.attach(12,1000,2000);
+  monServo.write(179); 
+}
+
+ 
+
+ 
+
+void loop()
+{
+  Blynk.run();
+}
+
+ 
+
+BLYNK_WRITE(V1)
+{
+  int x = param[0].asInt();
+  int y = param[1].asInt();
+  moveControl(x,y);
+
+}
+
+BLYNK_WRITE(V9)
+{
+  int pinvalue=param.asInt();
+  servo(pinvalue);
+}
+           
